@@ -1,7 +1,8 @@
 FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    ARCHIVE_DATA_DIR=/srv/data
 
 WORKDIR /srv
 
@@ -10,7 +11,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
 
-RUN useradd --create-home --uid 10001 appuser && chown -R appuser:appuser /srv
+RUN useradd --create-home --uid 10001 appuser \
+    && mkdir -p /srv/data \
+    && chown -R appuser:appuser /srv /srv/data
 USER appuser
 
 EXPOSE 8000

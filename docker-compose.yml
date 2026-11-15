@@ -14,3 +14,13 @@ services:
       - no-new-privileges:true
     cap_drop:
       - ALL
+    environment:
+      - ARCHIVE_DATA_DIR=/srv/data
+    volumes:
+      # Named volume keeps published batches (files + SQLite) across
+      # container restarts and rebuilds; the read_only root fs does not
+      # apply to mounted volumes.
+      - archive-data:/srv/data
+
+volumes:
+  archive-data:

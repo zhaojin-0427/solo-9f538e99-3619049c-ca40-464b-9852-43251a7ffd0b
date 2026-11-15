@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}批次不存在 · 碳核算台账标准化{% endblock %}
+{% block content %}
+<section class="panel">
+  <div class="result-head">
+    <h1>批次不存在</h1>
+    <a class="secondary" href="/archive">返回归档列表</a>
+  </div>
+  <div class="banner error" role="alert">
+    <strong>查不到批次 <code>{{ batch_id }}</code></strong>
+    <p>该批次号未登记。只有校验通过且登记成功的批次才可查询；请核对批次号。</p>
+  </div>
+</section>
+{% endblock %}

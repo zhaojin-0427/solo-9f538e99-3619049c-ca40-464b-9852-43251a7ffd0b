@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}批次 {{ batch.batch_id }} · 碳核算台账标准化{% endblock %}
+{% block content %}
+<section class="panel">
+  <div class="result-head">
+    <h1>批次 <code>{{ batch.batch_id }}</code></h1>
+    <a class="secondary" href="/archive">返回归档列表</a>
+  </div>
+
+  <div class="banner success" role="status">
+    <strong>不可变批次已发布</strong>
+    <p>
+      登记于 {{ batch.created_at }}（UTC），共 {{ batch.row_count }} 行数据。
+      批次内容发布后不再变更，可凭下列 SHA-256 复核任何一份文件。
+    </p>
+  </div>
+
+  <h2>摘要与完整性（SHA-256）</h2>
+  <div class="table-scroll">
+    <table class="grid">
+      <thead>
+        <tr><th>内容</th><th>原始文件名</th><th>SHA-256</th><th>下载</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>字段合同（原件）</td>
+          <td>{{ batch.contract_filename }}</td>
+          <td><code class="hash">{{ batch.contract_sha256 }}</code></td>
+          <td><a href="/archive/batches/{{ batch.batch_id }}/files/contract" download>下载</a></td>
+        </tr>
+        <tr>
+          <td>台账（原件）</td>
+          <td>{{ batch.ledger_filename }}</td>
+          <td><code class="hash">{{ batch.ledger_sha256 }}</code></td>
+          <td><a href="/archive/batches/{{ batch.batch_id }}/files/ledger" download>下载</a></td>
+        </tr>
+        <tr>
+          <td>标准列 CSV（结果）</td>
+          <td><span class="muted">standardized.csv</span></td>
+          <td><code class="hash">{{ batch.standardized_sha256 }}</code></td>
+          <td><a href="/archive/batches/{{ batch.batch_id }}/files/standardized" download>下载</a></td>
+        </tr>
+        <tr>
+          <td>字段映射（含哈希与元数据）</td>
+          <td><span class="muted">mapping.json</span></td>
+          <td><span class="muted">见文件内容</span></td>
+          <td><a href="/archive/batches/{{ batch.batch_id }}/files/mapping" download>下载</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>字段映射（标准列 ← 来源列）</h2>
+  <div class="table-scroll">
+    <table class="grid">
+      <thead>
+        <tr><th>标准列</th><th>类型</th><th>必填</th><th>来源列</th><th>源列序号</th></tr>
+      </thead>
+      <tbody>
+        {% for entry in batch.field_mapping %}
+        <tr{% if not entry.source_header %} class="muted"{% endif %}>
+          <td>{{ entry.standard_column }}</td>
+          <td>{{ entry.type }}</td>
+          <td>{{ "是" if entry.required else "否" }}</td>
+          <td>
+            {% if entry.source_header %}<code>{{ entry.source_header }}</code>
+            {% else %}（无来源，输出为空值）{% endif %}
+          </td>
+          <td>
+            {% if entry.source_column %}第 {{ entry.source_column }} 列
+            {% else %}<span class="muted">—</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted">
+    来源列均出自归档的台账原件 <code>{{ batch.ledger_filename }}</code>；
+    标准列定义出自归档的字段合同原件 <code>{{ batch.contract_filename }}</code>。
+  </p>
+
+  {% if batch.ignored_columns %}
+  <h2>已忽略的额外列</h2>
+  <p class="muted">{{ batch.ignored_columns|join("、") }}</p>
+  {% endif %}
+</section>
+{% endblock %}

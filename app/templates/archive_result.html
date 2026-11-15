@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}归档校验结果 · 碳核算台账标准化{% endblock %}
+{% block content %}
+<section class="panel">
+  <div class="result-head">
+    <h1>归档校验结果</h1>
+    <a class="secondary" href="/archive">返回归档页</a>
+  </div>
+  <p class="files">
+    字段合同：<code>{{ contract_name }}</code> ·
+    台账：<code>{{ ledger_name }}</code>
+  </p>
+
+  {% if upload_errors %}
+  <div class="banner error" role="alert">
+    <strong>无法处理上传文件</strong>
+    <ul>{% for message in upload_errors %}<li>{{ message }}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+
+  {% if publish_error %}
+  <div class="banner error" role="alert">
+    <strong>批次发布失败</strong>
+    <p>{{ publish_error }}。未产生任何可查批次，未登记的文件已清理；
+       已发布的其他批次不受影响。请重试或联系管理员检查数据目录。</p>
+  </div>
+  {% elif analysis and not analysis.valid %}
+  <div class="banner error" role="alert">
+    <strong>校验未通过 —— 未发布任何批次</strong>
+    <p>
+      共发现 {{ analysis.error_count }} 个问题。归档只在完全合格时发布，
+      请修正台账或字段合同后重新上传。
+    </p>
+  </div>
+  {% endif %}
+
+  {% include "_analysis.html" %}
+</section>
+{% endblock %}

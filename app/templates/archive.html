@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}批次归档 · 碳核算台账标准化{% endblock %}
+{% block content %}
+<section class="panel">
+  <h1>发布不可变归档批次</h1>
+  <p class="lede">
+    上传字段合同 JSON 与台账 CSV，沿用与首页相同的整文件映射与行校验。
+    <strong>仅当校验完全通过</strong>时，才把两份原始文件、标准列 CSV、字段映射
+    以及三份文件的 SHA-256 一起登记为不可变批次，供数仓追查每个标准列的来源。
+  </p>
+  <form action="/archive/publish" method="post" enctype="multipart/form-data" class="upload-form">
+    <div class="field">
+      <label for="contract">字段合同（JSON）</label>
+      <input id="contract" name="contract" type="file" accept=".json,application/json" required>
+      <p class="hint">原件将原样归档，不做任何改写。</p>
+    </div>
+    <div class="field">
+      <label for="ledger">能源台账（CSV，UTF-8）</label>
+      <input id="ledger" name="ledger" type="file" accept=".csv,text/csv" required>
+      <p class="hint">原件将原样归档；校验不通过则什么都不发布。</p>
+    </div>
+    <button type="submit">校验并发布批次</button>
+  </form>
+</section>
+
+<section class="panel">
+  <h2>已发布批次（{{ batches|length }}）</h2>
+  {% if batches %}
+  <div class="table-scroll">
+    <table class="grid">
+      <thead>
+        <tr>
+          <th>批次号</th><th>发布时间（UTC）</th><th>字段合同</th>
+          <th>台账</th><th>数据行</th><th>结果 SHA-256</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for batch in batches %}
+        <tr>
+          <td><a href="/archive/batches/{{ batch.batch_id }}"><code>{{ batch.batch_id }}</code></a></td>
+          <td>{{ batch.created_at }}</td>
+          <td>{{ batch.contract_filename }}</td>
+          <td>{{ batch.ledger_filename }}</td>
+          <td>{{ batch.row_count }}</td>
+          <td><code>{{ batch.standardized_sha256[:16] }}…</code></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="muted">尚无批次。上传文件并通过且校验通过后，会自动发布第一批。</p>
+  {% endif %}
+</section>
+{% endblock %}
